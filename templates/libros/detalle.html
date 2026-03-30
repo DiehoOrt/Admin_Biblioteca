@@ -1,0 +1,198 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ libro.titulo }} — Biblioteca{% endblock %}
+
+{% block content %}
+
+<!-- Encabezado -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <a href="{% url 'lista_libros' %}" class="text-muted small">
+            <i class="bi bi-arrow-left me-1"></i>Libros
+        </a>
+        <h4 class="fw-bold mb-0 mt-1">{{ libro.titulo }}</h4>
+    </div>
+    <a href="/admin/libros/libro/{{ libro.pk }}/change/" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-pencil me-1"></i>Editar
+    </a>
+</div>
+
+<!-- Info general -->
+<div class="row g-3 mb-4">
+    {% if libro.portada %}
+    <div class="col-md-2 text-center">
+        <img src="{{ libro.portada.url }}" alt="Portada" class="img-fluid rounded shadow-sm" style="max-height:220px;">
+    </div>
+    <div class="col-md-6">
+    {% else %}
+    <div class="col-md-8">
+    {% endif %}
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <h6 class="text-muted fw-semibold mb-3">Información del libro</h6>
+                <dl class="row mb-0">
+                    <dt class="col-sm-4">ISBN</dt>
+                    <dd class="col-sm-8"><code>{{ libro.isbn }}</code></dd>
+
+                    <dt class="col-sm-4">Año</dt>
+                    <dd class="col-sm-8">{{ libro.anio_publicacion }}</dd>
+
+                    <dt class="col-sm-4">Autores</dt>
+                    <dd class="col-sm-8">
+                        {% for autor in libro.autores.all %}
+                            {{ autor.apellido }}, {{ autor.nombre }}{% if not forloop.last %} · {% endif %}
+                        {% empty %}—{% endfor %}
+                    </dd>
+
+                    <dt class="col-sm-4">Categorías</dt>
+                    <dd class="col-sm-8">
+                        {% for cat in libro.categorias.all %}
+                            <span class="badge bg-secondary">{{ cat.nombre }}</span>
+                        {% empty %}—{% endfor %}
+                    </dd>
+
+                    {% if libro.descripcion %}
+                    <dt class="col-sm-4">Descripción</dt>
+                    <dd class="col-sm-8 text-muted">{{ libro.descripcion }}</dd>
+                    {% endif %}
+                </dl>
+            </div>
+        </div>
+    </div>
+
+    <!-- Disponibilidad -->
+
+    <div class="col-md-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-body text-center d-flex flex-column justify-content-center">
+                <p class="text-muted small mb-1">Disponibilidad</p>
+                <p class="display-4 fw-bold mb-0
+                    {% if libro.cantidad_disponible == 0 %}text-danger
+                    {% elif libro.cantidad_disponible <= 1 %}text-warning
+                    {% else %}text-success{% endif %}">
+                    {{ libro.cantidad_disponible }}
+                </p>
+                <p class="text-muted">de {{ libro.cantidad_total }} ejemplares</p>
+
+                {% if libro.cantidad_disponible == 0 %}
+                    <span class="badge bg-danger fs-6">Sin stock</span>
+                {% elif libro.cantidad_disponible <= 1 %}
+                    <span class="badge bg-warning text-dark fs-6">Stock bajo</span>
+                {% else %}
+                    <span class="badge bg-success fs-6">Disponible</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quién lo tiene actualmente -->
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-white fw-semibold border-bottom">
+        <i class="bi bi-person-check me-2 text-primary"></i>
+        En poder de alumnos
+        {% if en_poder %}
+            <span class="badge bg-primary ms-1">{{ en_poder|length }}</span>
+        {% endif %}
+    </div>
+    <div class="card-body p-0">
+        {% if en_poder %}
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Alumno</th>
+                        <th>Carnet</th>
+                        <th>Fecha préstamo</th>
+                        <th>Fecha límite</th>
+                        <th>Estado</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in en_poder %}
+                    <tr>
+                        <td class="fw-semibold">{{ p.alumno.apellido }}, {{ p.alumno.nombre }}</td>
+                        <td><code>{{ p.alumno.carnet }}</code></td>
+                        <td>{{ p.fecha_prestamo }}</td>
+                        <td>{{ p.fecha_devolucion_esperada }}</td>
+                        <td>
+                            {% if p.estado == 'vencido' %}
+                                <span class="badge bg-danger">
+                                    Vencido · {{ p.fecha_devolucion_esperada|timesince:hoy }} de atraso
+                                </span>
+                            {% else %}
+                                <span class="badge bg-success">Activo</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{% url 'perfil_alumno' p.alumno.pk %}"
+                               class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-person me-1"></i>Ver alumno
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center text-muted py-4">
+            <i class="bi bi-check-circle-fill text-success fs-3 d-block mb-2"></i>
+            Ningún alumno tiene este libro actualmente
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Historial de préstamos -->
+<div class="card shadow-sm">
+    <div class="card-header bg-white fw-semibold border-bottom">
+        <i class="bi bi-clock-history me-2 text-secondary"></i>Historial de préstamos
+        {% if historial %}
+            <span class="badge bg-secondary ms-1">últimos {{ historial|length }}</span>
+        {% endif %}
+    </div>
+    <div class="card-body p-0">
+        {% if historial %}
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Alumno</th>
+                        <th>Fecha préstamo</th>
+                        <th>Fecha devolución</th>
+                        <th>¿A tiempo?</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in historial %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'perfil_alumno' p.alumno.pk %}" class="text-decoration-none fw-semibold">
+                                {{ p.alumno.apellido }}, {{ p.alumno.nombre }}
+                            </a>
+                        </td>
+                        <td>{{ p.fecha_prestamo }}</td>
+                        <td>{{ p.fecha_devolucion_real }}</td>
+                        <td>
+                            {% if p.fecha_devolucion_real <= p.fecha_devolucion_esperada %}
+                                <span class="badge bg-success">A tiempo</span>
+                            {% else %}
+                                <span class="badge bg-danger">Tardío</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center text-muted py-4">
+            Sin historial de devoluciones
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}

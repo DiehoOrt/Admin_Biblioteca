@@ -1,0 +1,63 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Gestión Biblioteca{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/base.css' %}">
+    <link rel="icon" type="image/png" href="{% static 'img/UNICAES_Logo.png' %}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="bg-light">
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+    <div class="container-fluid px-4">
+        <a class="navbar-brand fw-bold" href="{% url 'dashboard' %}">
+            <img src="{% static 'img/UNICAES_Logo.png' %}" alt="UNICAES" height="32" class="me-2">Biblioteca
+        </a>
+        <div class="navbar-nav ms-auto flex-row gap-1">
+            {% if user.is_authenticated %}
+            <a class="nav-link px-3" href="{% url 'dashboard' %}"><i class="bi bi-pie-chart-fill me-1"></i>Dashboard</a>
+            <a class="nav-link px-3" href="{% url 'catalogo' %}"><i class="bi bi-grid me-1"></i>Catálogo</a>
+            <a class="nav-link px-3" href="/alumnos/"><i class="bi bi-mortarboard-fill me-1"></i>Alumnos</a>
+            <a class="nav-link px-3" href="/libros/"><i class="bi bi-book me-1"></i>Libros</a>
+            <a class="nav-link px-3" href="/buscar/"><i class="bi bi-search me-1"></i>Buscar</a>
+            {% if user.is_staff %}
+            <a class="nav-link px-3" href="/admin/prestamos/prestamo/add/"><i class="bi bi-plus-circle-fill me-1"></i>Préstamo</a>
+            <a class="nav-link px-3" href="/admin/"><i class="bi bi-gear-fill me-1"></i>Administración</a>
+            {% endif %}
+            <form method="post" action="{% url 'logout' %}" class="d-inline">
+                {% csrf_token %}
+                <button type="submit" class="nav-link px-3 btn btn-link text-white">
+                    <i class="bi bi-box-arrow-right me-1"></i>Salir
+                </button>
+            </form>
+            {% else %}
+            <!-- <a href="{% url 'login' %}" class="btn btn-outline-light btn-sm">
+                <i class="bi bi-box-arrow-in-right me-1"></i>Ingresar
+            </a> -->
+            {% endif %}
+        </div>
+    </div>
+</nav>
+
+<div class="container-fluid px-4 py-4">
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    {% block content %}{% endblock %}
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

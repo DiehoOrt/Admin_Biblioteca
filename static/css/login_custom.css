@@ -1,0 +1,30 @@
+/* 
+body {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-image: url("{% static 'img/fondoUnicaes.png' %}");
+    background-size: cover;
+    background-position: center;
+}
+.login-card {
+    width: 100%;
+    max-width: 380px;
+    border-radius: 1rem;
+    background: rgba(255, 255, 255, 0.93);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+}
+.logo-wrapper {
+    width: 100px;
+    height: 100px;
+    margin: 0 auto -50px;
+    position: relative;
+    z-index: 1;
+}
+.logo-wrapper img {
+    width: 100px;
+    height: 100px;
+    object-fit: contain;
+    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2));
+} */

@@ -1,0 +1,23 @@
+.stat-card {
+    border-left: 4px solid transparent;
+    transition: transform .15s;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+}
+
+.stat-primary { border-left-color: #0d6efd; }
+.stat-success { border-left-color: #198754; }
+.stat-danger  { border-left-color: #dc3545; }
+.stat-warning { border-left-color: #ffc107; }
+
+.echart {
+    width: 100%;
+    height: 300px;
+}
+
+.echart-sm {
+    width: 100%;
+    height: 260px;
+}

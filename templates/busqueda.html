@@ -1,0 +1,130 @@
+{% extends 'base.html' %}
+
+{% block title %}Búsqueda — Biblioteca{% endblock %}
+
+{% block content %}
+
+<div class="mb-4">
+    <h4 class="fw-bold mb-3">
+        <i class="bi bi-search me-2 text-primary"></i>Búsqueda global
+    </h4>
+    <form method="get" class="d-flex gap-2">
+        <input type="text" name="q" value="{{ q }}"
+               class="form-control form-control-lg" placeholder="Título, ISBN, autor, carnet, alumno…" autofocus>
+        <button type="submit" class="btn btn-primary px-4">
+            <i class="bi bi-search"></i>
+        </button>
+        {% if q %}
+        <a href="{% url 'busqueda' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-x-lg"></i>
+        </a>
+        {% endif %}
+    </form>
+    {% if q %}
+    <p class="text-muted small mt-2">
+        {{ total }} resultado{{ total|pluralize }} para "<strong>{{ q }}</strong>"
+    </p>
+    {% endif %}
+</div>
+
+{% if q %}
+<div class="row g-4">
+
+    <!-- Libros -->
+    <div class="col-md-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-white fw-semibold border-bottom">
+                <i class="bi bi-book me-2 text-primary"></i>Libros
+                <span class="badge bg-primary ms-1">{{ libros|length }}</span>
+            </div>
+            <div class="card-body p-0">
+                {% if libros %}
+                <ul class="list-group list-group-flush">
+                    {% for libro in libros %}
+                    <li class="list-group-item d-flex justify-content-between align-items-start py-3">
+                        <div>
+                            <div class="fw-semibold">{{ libro.titulo }}</div>
+                            <small class="text-muted">
+                                {{ libro.isbn }}
+                                {% for autor in libro.autores.all %}
+                                 · {{ autor.apellido }}, {{ autor.nombre }}
+                                {% endfor %}
+                            </small>
+                            <div class="mt-1">
+                                {% for cat in libro.categorias.all %}
+                                    <span class="badge bg-secondary">{{ cat.nombre }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="d-flex flex-column align-items-end gap-1 ms-2">
+                            {% if libro.cantidad_disponible == 0 %}
+                                <span class="badge bg-danger">Sin stock</span>
+                            {% else %}
+                                <span class="badge bg-success">{{ libro.cantidad_disponible }}/{{ libro.cantidad_total }}</span>
+                            {% endif %}
+                            <a href="{% url 'detalle_libro' libro.pk %}"
+                               class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <div class="text-center text-muted py-5">
+                    <i class="bi bi-book fs-3 d-block mb-2"></i>
+                    Sin libros encontrados
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Alumnos -->
+    <div class="col-md-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-white fw-semibold border-bottom">
+                <i class="bi bi-mortarboard-fill me-2 text-primary"></i>Alumnos
+                <span class="badge bg-primary ms-1">{{ alumnos|length }}</span>
+            </div>
+            <div class="card-body p-0">
+                {% if alumnos %}
+                <ul class="list-group list-group-flush">
+                    {% for alumno in alumnos %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center py-3">
+                        <div>
+                            <div class="fw-semibold">{{ alumno.apellido }}, {{ alumno.nombre }}</div>
+                            <small class="text-muted">
+                                <code>{{ alumno.carnet }}</code> · {{ alumno.email }}
+                            </small>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            {% if alumno.estado == 'activo' %}
+                                <span class="badge bg-success">Activo</span>
+                            {% elif alumno.estado == 'suspendido' %}
+                                <span class="badge bg-danger">Suspendido</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Inactivo</span>
+                            {% endif %}
+                            <a href="{% url 'perfil_alumno' alumno.pk %}"
+                               class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <div class="text-center text-muted py-5">
+                    <i class="bi bi-person fs-3 d-block mb-2"></i>
+                    Sin alumnos encontrados
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endif %}
+
+{% endblock %}

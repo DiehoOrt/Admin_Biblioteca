@@ -1,0 +1,259 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dashboard — Gestión Biblioteca{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="fw-bold mb-0">
+        <i class="bi bi-pie-chart-fill me-2 text-primary"></i>Dashboard
+    </h4>
+    <div class="d-flex align-items-center gap-3">
+        <span class="text-muted small"><i class="bi bi-calendar-day me-1"></i>{{ hoy }}</span>
+        <a href="{% url 'reporte_morosos' %}" class="btn btn-sm btn-danger">
+            <i class="bi bi-file-earmark-text me-1"></i>Reporte morosos
+        </a>
+    </div>
+</div>
+
+<!-- Tarjetas de resumen -->
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-4 col-xl-2">
+        <div class="card stat-card stat-primary shadow-sm h-100">
+            <div class="card-body">
+                <p class="text-muted small mb-1">Libros</p>
+                <p class="fs-2 fw-bold text-primary mb-0">{{ stats.total_libros }}</p>
+                <i class="bi bi-book text-muted"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-4 col-xl-2">
+        <div class="card stat-card stat-primary shadow-sm h-100">
+            <div class="card-body">
+                <p class="text-muted small mb-1">Alumnos</p>
+                <p class="fs-2 fw-bold text-primary mb-0">{{ stats.total_alumnos }}</p>
+                <i class="bi bi-mortarboard-fill text-muted"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-4 col-xl-2">
+        <div class="card stat-card stat-success shadow-sm h-100">
+            <div class="card-body">
+                <p class="text-muted small mb-1">Préstamos activos</p>
+                <p class="fs-2 fw-bold text-success mb-0">{{ stats.prestamos_activos }}</p>
+                <i class="bi bi-book-half text-muted"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-4 col-xl-2">
+        <div class="card stat-card stat-danger shadow-sm h-100">
+            <div class="card-body">
+                <p class="text-muted small mb-1">Vencidos</p>
+                <p class="fs-2 fw-bold text-danger mb-0">{{ stats.prestamos_vencidos }}</p>
+                <i class="bi bi-exclamation-triangle-fill text-muted"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-4 col-xl-2">
+        <div class="card stat-card stat-warning shadow-sm h-100">
+            <div class="card-body">
+                <p class="text-muted small mb-1">Multas pendientes</p>
+                <p class="fs-2 fw-bold text-warning mb-0">{{ stats.multas_pendientes }}</p>
+                <i class="bi bi-receipt-cutoff text-muted"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-4 col-xl-2">
+        <div class="card stat-card stat-warning shadow-sm h-100">
+            <div class="card-body">
+                <p class="text-muted small mb-1">Monto a cobrar</p>
+                <p class="fs-2 fw-bold text-warning mb-0">${{ stats.monto_multas }}</p>
+                <i class="bi bi-coin text-muted"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Fila 1: Gradient Stacked Area + Pie estado préstamos -->
+<div class="row g-3 mb-4">
+    <div class="col-lg-8">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-white fw-semibold border-bottom">
+                <i class="bi bi-graph-up me-2 text-primary"></i>Préstamos y devoluciones por mes
+            </div>
+            <div class="card-body">
+                <div id="chartArea"
+                     class="echart"
+                     data-chart="{{ chart_area|escape }}"></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-white fw-semibold border-bottom">
+                <i class="bi bi-circle-half me-2 text-primary"></i>Estado de préstamos
+            </div>
+            <div class="card-body">
+                <div id="chartEstados"
+                     class="echart"
+                     data-chart="{{ chart_estados|escape }}"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Fila 2: Bar libros + Tabla vencidos -->
+<div class="row g-3 mb-4">
+    <div class="col-lg-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-white fw-semibold border-bottom">
+                <i class="bi bi-trophy-fill me-2 text-warning"></i>Top 5 libros más prestados
+            </div>
+            <div class="card-body">
+                <div id="chartLibros"
+                     class="echart"
+                     data-chart="{{ chart_libros|escape }}"></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-white fw-semibold border-bottom text-danger">
+                <i class="bi bi-exclamation-circle-fill me-2"></i>Préstamos vencidos
+            </div>
+            <div class="card-body p-0">
+                {% if vencidos %}
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Alumno</th>
+                                <th>Libro</th>
+                                <th>Venció</th>
+                                <th>Atraso</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for p in vencidos %}
+                            <tr>
+                                <td>{{ p.alumno.apellido }}, {{ p.alumno.nombre }}</td>
+                                <td>{{ p.libro.titulo|truncatechars:25 }}</td>
+                                <td>{{ p.fecha_devolucion_esperada }}</td>
+                                <td>
+                                    <span class="badge bg-danger">
+                                        {{ p.fecha_devolucion_esperada|timesince:hoy }}
+                                    </span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center text-muted py-5">
+                    <i class="bi bi-check-circle-fill fs-2 mb-2 text-success d-block"></i>
+                    Sin préstamos vencidos
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Fila 3: Ingresos por multas -->
+<div class="row g-3 mb-4">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white fw-semibold border-bottom d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-cash-stack me-2" style="color:#6610f2"></i>Ingresos por multas cobradas (últimos 6 meses)</span>
+                <span class="badge text-bg-secondary">Total cobrado: ${{ chart_ingresos_total }}</span>
+            </div>
+            <div class="card-body">
+                <div id="chartIngresos"
+                     class="echart"
+                     data-chart="{{ chart_ingresos|escape }}"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Fila 4: Stacked Line + Pie multas -->
+<div class="row g-3 mb-4">
+    <div class="col-lg-8">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-white fw-semibold border-bottom">
+                <i class="bi bi-graph-up-arrow me-2 text-primary"></i>Evolución por estado (últimos 6 meses)
+            </div>
+            <div class="card-body">
+                <div id="chartLineas"
+                     class="echart"
+                     data-chart="{{ chart_lineas|escape }}"></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-white fw-semibold border-bottom">
+                <i class="bi bi-circle-half me-2 text-warning"></i>Estado de multas
+            </div>
+            <div class="card-body">
+                <div id="chartMultas"
+                     class="echart"
+                     data-chart="{{ chart_multas|escape }}"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Próximos a vencer -->
+{% if proximos %}
+<div class="row g-3">
+    <div class="col-12">
+        <div class="card shadow-sm border-warning">
+            <div class="card-header bg-warning bg-opacity-10 fw-semibold">
+                <i class="bi bi-clock-fill me-2 text-warning"></i>Próximos a vencer (3 días)
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Alumno</th>
+                                <th>Carnet</th>
+                                <th>Libro</th>
+                                <th>Vence el</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for p in proximos %}
+                            <tr>
+                                <td>{{ p.alumno.apellido }}, {{ p.alumno.nombre }}</td>
+                                <td>{{ p.alumno.carnet }}</td>
+                                <td>{{ p.libro.titulo|truncatechars:40 }}</td>
+                                <td>
+                                    <span class="badge bg-warning text-dark">
+                                        {{ p.fecha_devolucion_esperada }}
+                                    </span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+<script src="{% static 'js/dashboard.js' %}"></script>
+{% endblock %}

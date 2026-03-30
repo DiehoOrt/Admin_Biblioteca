@@ -1,0 +1,165 @@
+{% extends 'base.html' %}
+
+{% block title %}Reporte de Morosos — Biblioteca{% endblock %}
+
+{% block extra_css %}
+<style>
+    @media print {
+        .navbar, .btn-volver, .btn-imprimir, .alert { display: none !important; }
+        .container-fluid { padding: 0 !important; }
+        body { background: white !important; }
+        .card { border: 1px solid #dee2e6 !important; box-shadow: none !important; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <a href="{% url 'dashboard' %}" class="text-muted text-decoration-none small btn-volver">
+            <i class="bi bi-arrow-left me-1"></i>Volver al dashboard
+        </a>
+        <h4 class="fw-bold mb-0 mt-1">
+            <i class="bi bi-file-earmark-text me-2 text-danger"></i>Reporte de Morosos
+        </h4>
+        <small class="text-muted">Generado el {{ hoy }}</small>
+    </div>
+    <button onclick="window.print()" class="btn btn-danger btn-imprimir">
+        <i class="bi bi-printer me-1"></i>Imprimir / Guardar PDF
+    </button>
+</div>
+
+<!-- Resumen -->
+<div class="row g-3 mb-4">
+    <div class="col-sm-4">
+        <div class="card shadow-sm border-danger border-opacity-50">
+            <div class="card-body text-center">
+                <p class="text-muted small mb-1">Libros no devueltos (vencidos)</p>
+                <p class="fs-2 fw-bold text-danger mb-0">{{ vencidos|length }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-4">
+        <div class="card shadow-sm border-warning border-opacity-50">
+            <div class="card-body text-center">
+                <p class="text-muted small mb-1">Multas pendientes de pago</p>
+                <p class="fs-2 fw-bold text-warning mb-0">{{ multas|length }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-4">
+        <div class="card shadow-sm border-danger border-opacity-50">
+            <div class="card-body text-center">
+                <p class="text-muted small mb-1">Total a cobrar</p>
+                <p class="fs-2 fw-bold text-danger mb-0">${{ total_multas }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Tabla 1: Libros vencidos -->
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-danger bg-opacity-10 fw-semibold border-bottom text-danger">
+        <i class="bi bi-exclamation-circle-fill me-2"></i>Libros no devueltos (vencidos)
+    </div>
+    <div class="card-body p-0">
+        {% if vencidos %}
+        <div class="table-responsive">
+            <table class="table table-sm table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>#</th>
+                        <th>Alumno</th>
+                        <th>Carnet</th>
+                        <th>Email</th>
+                        <th>Libro</th>
+                        <th>Venció el</th>
+                        <th>Atraso</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in vencidos %}
+                    <tr>
+                        <td class="text-muted">{{ forloop.counter }}</td>
+                        <td>
+                            <a href="{% url 'perfil_alumno' p.alumno.pk %}" class="text-decoration-none fw-semibold">
+                                {{ p.alumno.apellido }}, {{ p.alumno.nombre }}
+                            </a>
+                        </td>
+                        <td><code>{{ p.alumno.carnet }}</code></td>
+                        <td class="text-muted small">{{ p.alumno.email }}</td>
+                        <td>{{ p.libro.titulo|truncatechars:40 }}</td>
+                        <td>{{ p.fecha_devolucion_esperada }}</td>
+                        <td>
+                            <span class="badge bg-danger">
+                                {{ p.fecha_devolucion_esperada|timesince:hoy }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center text-muted py-4">
+            <i class="bi bi-check-circle-fill fs-3 mb-2 text-success d-block"></i>
+            Sin libros vencidos
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Tabla 2: Multas pendientes -->
+<div class="card shadow-sm">
+    <div class="card-header bg-warning bg-opacity-10 fw-semibold border-bottom text-warning">
+        <i class="bi bi-coin me-2"></i>Multas pendientes de pago
+    </div>
+    <div class="card-body p-0">
+        {% if multas %}
+        <div class="table-responsive">
+            <table class="table table-sm table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>#</th>
+                        <th>Alumno</th>
+                        <th>Carnet</th>
+                        <th>Email</th>
+                        <th>Libro</th>
+                        <th>Monto</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for m in multas %}
+                    <tr>
+                        <td class="text-muted">{{ forloop.counter }}</td>
+                        <td>
+                            <a href="{% url 'perfil_alumno' m.prestamo.alumno.pk %}" class="text-decoration-none fw-semibold">
+                                {{ m.prestamo.alumno.apellido }}, {{ m.prestamo.alumno.nombre }}
+                            </a>
+                        </td>
+                        <td><code>{{ m.prestamo.alumno.carnet }}</code></td>
+                        <td class="text-muted small">{{ m.prestamo.alumno.email }}</td>
+                        <td>{{ m.prestamo.libro.titulo|truncatechars:40 }}</td>
+                        <td><span class="badge bg-warning text-dark fw-bold">${{ m.monto }}</span></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot class="table-light">
+                    <tr>
+                        <td colspan="5" class="text-end fw-semibold">Total pendiente:</td>
+                        <td><strong class="text-danger fw-bold">${{ total_multas }}</strong></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center text-muted py-4">
+            <i class="bi bi-check-circle-fill fs-3 mb-2 text-success d-block"></i>
+            Sin multas pendientes
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}

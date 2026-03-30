@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+
+{% block title %}Alumnos — Biblioteca{% endblock %}
+
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="fw-bold mb-0">
+        <i class="bi bi-mortarboard-fill me-2 text-primary"></i>Alumnos
+    </h4>
+    <a href="/admin/alumnos/alumno/add/" class="btn btn-primary btn-sm">
+        <i class="bi bi-plus-lg me-1"></i>Nuevo alumno
+    </a>
+</div>
+
+<!-- Búsqueda -->
+<div class="card shadow-sm mb-4">
+    <div class="card-body py-3">
+        <form method="get" class="d-flex gap-2">
+            <input type="text" name="q" value="{{ q }}"
+                   class="form-control" placeholder="Buscar por nombre, apellido o carnet…" autofocus>
+            <button type="submit" class="btn btn-primary px-4">
+                <i class="bi bi-search"></i>
+            </button>
+            {% if q %}
+            <a href="{% url 'lista_alumnos' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-x-lg"></i>
+            </a>
+            {% endif %}
+        </form>
+    </div>
+</div>
+
+<!-- Tabla -->
+<div class="card shadow-sm">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Alumno</th>
+                        <th>Carnet</th>
+                        <th>Estado</th>
+                        <th>Préstamos activos</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for alumno in alumnos %}
+                    <tr>
+                        <td>
+                            <span class="fw-semibold">{{ alumno.apellido }}, {{ alumno.nombre }}</span>
+                            <br><small class="text-muted">{{ alumno.email }}</small>
+                        </td>
+                        <td><code>{{ alumno.carnet }}</code></td>
+                        <td>
+                            {% if alumno.estado == 'activo' %}
+                                <span class="badge bg-success">Activo</span>
+                            {% elif alumno.estado == 'suspendido' %}
+                                <span class="badge bg-danger">Suspendido</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Inactivo</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if alumno.prestamos_activos %}
+                                <span class="badge bg-primary rounded-pill">{{ alumno.prestamos_activos }}</span>
+                            {% else %}
+                                <span class="text-muted">—</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-end">
+                            <a href="{% url 'perfil_alumno' alumno.pk %}"
+                               class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-eye me-1"></i>Ver perfil
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center text-muted py-5">
+                            {% if q %}
+                                No se encontraron alumnos para "<strong>{{ q }}</strong>"
+                            {% else %}
+                                No hay alumnos registrados
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

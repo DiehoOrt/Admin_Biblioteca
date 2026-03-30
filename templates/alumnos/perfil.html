@@ -1,0 +1,192 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ alumno.apellido }}, {{ alumno.nombre }} — Biblioteca{% endblock %}
+
+{% block content %}
+
+<!-- Encabezado -->
+<div class="d-flex justify-content-between align-items-start mb-4">
+    <div>
+        <a href="{% url 'lista_alumnos' %}" class="text-muted text-decoration-none small">
+            <i class="bi bi-arrow-left me-1"></i>Volver a alumnos
+        </a>
+        <h4 class="fw-bold mb-0 mt-1">
+            {{ alumno.apellido }}, {{ alumno.nombre }}
+        </h4>
+    </div>
+    <a href="/admin/alumnos/alumno/{{ alumno.pk }}/change/"
+       class="btn btn-sm btn-outline-secondary">
+        <i class="bi bi-pencil me-1"></i>Editar
+    </a>
+</div>
+
+<!-- Datos del alumno -->
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-6 col-md-3">
+                <p class="text-muted small mb-1">Carnet</p>
+                <p class="fw-semibold mb-0"><code>{{ alumno.carnet }}</code></p>
+            </div>
+            <div class="col-6 col-md-3">
+                <p class="text-muted small mb-1">Email</p>
+                <p class="fw-semibold mb-0">{{ alumno.email }}</p>
+            </div>
+            <div class="col-6 col-md-3">
+                <p class="text-muted small mb-1">Inscripción</p>
+                <p class="fw-semibold mb-0">{{ alumno.fecha_inscripcion }}</p>
+            </div>
+            <div class="col-6 col-md-3">
+                <p class="text-muted small mb-1">Estado</p>
+                {% if alumno.estado == 'activo' %}
+                    <span class="badge bg-success fs-6">Activo</span>
+                {% elif alumno.estado == 'suspendido' %}
+                    <span class="badge bg-danger fs-6">Suspendido</span>
+                {% else %}
+                    <span class="badge bg-secondary fs-6">Inactivo</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Préstamos activos + Multas pendientes -->
+<div class="row g-4 mb-4">
+
+    <!-- Préstamos activos -->
+    <div class="col-lg-7">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-white fw-semibold border-bottom d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-book-half me-2 text-primary"></i>Préstamos activos</span>
+                <span class="badge bg-primary rounded-pill">{{ prestamos_activos|length }}</span>
+            </div>
+            <div class="card-body p-0">
+                {% if prestamos_activos %}
+                <div class="list-group list-group-flush">
+                    {% for p in prestamos_activos %}
+                    <div class="list-group-item py-3">
+                        <div class="d-flex justify-content-between align-items-start gap-3">
+                            <div class="flex-grow-1">
+                                <p class="fw-semibold mb-1">{{ p.libro.titulo }}</p>
+                                <small class="text-muted">
+                                    <i class="bi bi-calendar-plus me-1"></i>{{ p.fecha_prestamo }}
+                                    &nbsp;·&nbsp;
+                                    <i class="bi bi-calendar-check me-1"></i>Vence: {{ p.fecha_devolucion_esperada }}
+                                </small>
+                            </div>
+                            <div class="text-end flex-shrink-0">
+                                {% if p.estado == 'vencido' %}
+                                    <span class="badge bg-danger mb-2 d-block">
+                                        ⚠ {{ p.fecha_devolucion_esperada|timesince:hoy }} de retraso
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-success mb-2 d-block">Activo</span>
+                                {% endif %}
+                                <form method="post"
+                                      action="{% url 'devolver_libro' alumno.pk p.pk %}"
+                                      onsubmit="return confirm('¿Registrar devolución de este libro hoy?')">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-primary">
+                                        <i class="bi bi-arrow-return-left me-1"></i>Devolver
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center text-muted py-5">
+                    <i class="bi bi-check-circle-fill fs-3 mb-2 text-success d-block"></i>
+                    Sin préstamos activos
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Multas pendientes -->
+    <div class="col-lg-5">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-white fw-semibold border-bottom d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-coin me-2 text-warning"></i>Multas pendientes</span>
+                <span class="badge bg-warning text-dark rounded-pill">{{ multas_pendientes|length }}</span>
+            </div>
+            <div class="card-body p-0">
+                {% if multas_pendientes %}
+                <div class="list-group list-group-flush">
+                    {% for multa in multas_pendientes %}
+                    <div class="list-group-item py-3">
+                        <div class="d-flex justify-content-between align-items-center gap-3">
+                            <div class="flex-grow-1">
+                                <p class="fw-bold text-danger mb-1">${{ multa.monto }}</p>
+                                <small class="text-muted d-block">{{ multa.motivo }}</small>
+                                <small class="text-muted">{{ multa.prestamo.libro.titulo|truncatechars:35 }}</small>
+                            </div>
+                            <form method="post"
+                                  action="{% url 'pagar_multa' alumno.pk multa.pk %}"
+                                  onsubmit="return confirm('¿Confirmar pago de ${{ multa.monto }}?')">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-success flex-shrink-0">
+                                    <i class="bi bi-check-lg me-1"></i>Pagada
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center text-muted py-5">
+                    <i class="bi bi-check-circle-fill fs-3 mb-2 text-success d-block"></i>
+                    Sin multas pendientes
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Historial -->
+<div class="card shadow-sm">
+    <div class="card-header bg-white fw-semibold border-bottom">
+        <i class="bi bi-clock-history me-2 text-secondary"></i>Historial de préstamos devueltos
+    </div>
+    <div class="card-body p-0">
+        {% if historial %}
+        <div class="table-responsive">
+            <table class="table table-sm table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Libro</th>
+                        <th>Prestado</th>
+                        <th>Devuelto</th>
+                        <th>Multa</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in historial %}
+                    <tr>
+                        <td>{{ p.libro.titulo|truncatechars:45 }}</td>
+                        <td>{{ p.fecha_prestamo }}</td>
+                        <td>{{ p.fecha_devolucion_real }}</td>
+                        <td>
+                            {% if p.multa %}
+                                <span class="badge {% if p.multa.estado == 'pagada' %}bg-success{% else %}bg-warning text-dark{% endif %}">
+                                    ${{ p.multa.monto }}
+                                </span>
+                            {% else %}
+                                <span class="text-muted">—</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center text-muted py-4">Sin historial</div>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}

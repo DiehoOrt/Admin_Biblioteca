@@ -1,0 +1,150 @@
+/* ─── Login page ─────────────────────────────────────────────────── */
+body.login-page {
+    background-image: url('../img/fondoUnicaes.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.login-card-body,
+.login-card {
+    background-color: rgba(255, 255, 255, 0.93) !important;
+    border: none !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25) !important;
+}
+
+.login-logo img {
+    width: 90px;
+    height: 90px;
+    object-fit: contain;
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+}
+
+/* ─── Variables Bootstrap 5 exactas del frontend ────────────────── */
+:root {
+    --bs-primary:        #0d6efd;
+    --bs-primary-rgb:    13, 110, 253;
+    --bs-success:        #198754;
+    --bs-danger:         #dc3545;
+    --bs-warning:        #ffc107;
+}
+
+/* ─── Navbar superior (.app-header es el selector real en Jazzmin 3) */
+.app-header.navbar {
+    background-color: #212529 !important;
+    border-bottom: none !important;
+    --bs-nav-link-color:       rgba(255, 255, 255, 0.85);
+    --bs-nav-link-hover-color: #fff;
+}
+
+/* Todos los iconos y links del header en blanco */
+.app-header .nav-link,
+.app-header .nav-link i,
+.app-header .nav-link .fas,
+.app-header .nav-link .far {
+    color: rgba(255, 255, 255, 0.85) !important;
+}
+
+.app-header .nav-link:hover,
+.app-header .nav-link:hover i {
+    color: #fff !important;
+}
+
+/* ─── Panel de usuario en el sidebar (nombre + avatar) ──────────── */
+.user-panel .info span,
+.user-panel .info a {
+    color: #fff !important;
+    opacity: 1 !important;
+}
+
+.user-panel .image i {
+    color: rgba(255, 255, 255, 0.75) !important;
+}
+
+/* ─── Área de marca/logo ─────────────────────────────────────────── */
+.brand-link {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+    color: #fff !important;
+}
+
+.brand-link:hover { color: #fff !important; }
+
+.brand-link img {
+    background: transparent !important;
+    box-shadow: none !important;
+}
+
+/* ─── Sidebar oscuro con acento azul primario ────────────────────── */
+.main-sidebar,
+.app-sidebar {
+    background-color: #212529 !important;
+}
+
+/* Item activo → azul primario del frontend */
+.sidebar-dark-primary .nav-sidebar > .nav-item > .nav-link.active,
+.sidebar-dark-primary .nav-sidebar > .nav-item.menu-open > .nav-link {
+    background-color: #0d6efd !important;
+    color: #fff !important;
+}
+
+/* Hover sobre items del sidebar */
+.sidebar-dark-primary .nav-sidebar > .nav-item > .nav-link:hover {
+    background-color: rgba(13, 110, 253, 0.15) !important;
+    color: #fff !important;
+}
+
+/* Sub-items activos */
+.sidebar-dark-primary .nav-treeview .nav-link.active,
+.sidebar-dark-primary .nav-treeview .nav-link:hover {
+    color: #0d6efd !important;
+}
+
+/* ─── Botones primarios — mismo azul que btn-primary del frontend ── */
+.btn-primary {
+    background-color: #0d6efd !important;
+    border-color:     #0d6efd !important;
+    color: #fff !important;
+}
+
+.btn-primary:hover,
+.btn-primary:focus {
+    background-color: #0b5ed7 !important;
+    border-color:     #0a58ca !important;
+}
+
+/* ─── Botón "Guardar" en formularios del admin ───────────────────── */
+input[type="submit"].default,
+.submit-row input[type="submit"] {
+    background-color: #0d6efd !important;
+    border-color:     #0d6efd !important;
+}
+
+/* ─── Cards / content-wrapper — fondo igual al frontend ─────────── */
+.content-wrapper,
+.app-content {
+    background-color: #f8f9fa !important;
+}
+
+.card {
+    border: none !important;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1) !important;
+}
+
+.card-header {
+    background-color: #fff !important;
+    border-bottom: 1px solid #dee2e6 !important;
+    font-weight: 600;
+}
+
+/* ─── Small boxes (stat cards) ──────────────────────────────────── */
+.small-box.bg-primary  { background-color: #0d6efd !important; }
+.small-box.bg-success  { background-color: #198754 !important; }
+.small-box.bg-danger   { background-color: #dc3545 !important; }
+.small-box.bg-warning  { background-color: #ffc107 !important; color: #212529 !important; }
+
+/* ─── Links y acentos generales ──────────────────────────────────── */
+a { color: #0d6efd; }
+a:hover { color: #0b5ed7; }
+
+.text-primary { color: #0d6efd !important; }
+.bg-primary   { background-color: #0d6efd !important; }
