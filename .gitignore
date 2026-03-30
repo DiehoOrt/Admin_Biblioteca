@@ -19,8 +19,6 @@ media/
 *.swp
 *.swo
 
-# Claude Code
-.claude/
 
 # Sistema operativo
 .DS_Store
